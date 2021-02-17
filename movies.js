@@ -15,18 +15,9 @@ window.addEventListener('DOMContentLoaded', async function(event) {
 
     let db = firebase.firestore()
     let querySnapshot = await db.collection('watched').get()
-    let watched = querySnapshot.docs
-    console.log(watched)
+    let watchedList = querySnapshot.docs
+    console.log(watchedList)
 
-    // for (let i = 0; i < moviesList.length; i++){
-    //     let movie = moviesList[i]
-    //     console.log(movie)
-    //     let movieId = movie.id
-    //     console.log(movieId)
-    //     let movieData = movie.data()
-    //     console.log(movieData)
-    //     movieWatched = movieData.text
-    // }
 
     let response = await fetch(`https://api.themoviedb.org/3/movie/now_playing?api_key=6947ffdacb44e290172ab8e8d7f4235e&language=en-US`)
     let json = await response.json()
@@ -37,13 +28,21 @@ window.addEventListener('DOMContentLoaded', async function(event) {
         let movieId = movies[i].id 
         let moviePoster = movies[i].poster_path 
        
-        document.querySelector('.movies').insertAdjacentHTML('beforeend', `
-            <div class="w-1/5 p-4 movie-${movieId} opacity-20">
+
+        let watchedMovie = await db.collection('watched').doc(`${movieId}`).get()
+        if (watchedMovie.exists) {        
+            document.querySelector('.movies').insertAdjacentHTML('beforeend', `
+                <div class="w-1/5 p-4 movie-${movieId} opacity-20">
+                    <img src="https://image.tmdb.org/t/p/w500${moviePoster}" class="w-full">
+                    <a href="#" class="watched-button block text-center text-white bg-green-500 mt-4 px-4 py-2 rounded">I've watched this!</a>
+                </div>`)
+        } else { 
+            document.querySelector('.movies').insertAdjacentHTML('beforeend', `
+            <div class="w-1/5 p-4 movie-${movieId}">
                 <img src="https://image.tmdb.org/t/p/w500${moviePoster}" class="w-full">
                 <a href="#" class="watched-button block text-center text-white bg-green-500 mt-4 px-4 py-2 rounded">I've watched this!</a>
             </div>`)
-
-
+        } 
         let watchButton = document.querySelector(`.movie-${movieId} .watched-button`)
         let uniqueMovie = document.querySelector(`.movie-${movieId}`)
     
@@ -52,7 +51,7 @@ window.addEventListener('DOMContentLoaded', async function(event) {
             uniqueMovie.classList.add('opacity-20')
             console.log(`${movies[i].original_title} was watched.`)
 
-            await db.collection('watched').doc(`${movieId}`).set({})
+            let docRef = await db.collection('watched').doc(`${movieId}`).set({})
         })
     }
         
