@@ -12,16 +12,57 @@
 // complete image URL
 
 window.addEventListener('DOMContentLoaded', async function(event) {
+
+    let db = firebase.firestore()
+    let querySnapshot = await db.collection('watched').get()
+    let watched = querySnapshot.docs
+    console.log(watched)
+
+    // for (let i = 0; i < moviesList.length; i++){
+    //     let movie = moviesList[i]
+    //     console.log(movie)
+    //     let movieId = movie.id
+    //     console.log(movieId)
+    //     let movieData = movie.data()
+    //     console.log(movieData)
+    //     movieWatched = movieData.text
+    // }
+
+    let response = await fetch(`https://api.themoviedb.org/3/movie/now_playing?api_key=6947ffdacb44e290172ab8e8d7f4235e&language=en-US`)
+    let json = await response.json()
+    let movies = json.results
+    console.log(movies)
+
+    for (let i = 0; i < movies.length; i++) {
+        let movieId = movies[i].id 
+        let moviePoster = movies[i].poster_path 
+       
+        document.querySelector('.movies').insertAdjacentHTML('beforeend', `
+            <div class="w-1/5 p-4 movie-${movieId} opacity-20">
+                <img src="https://image.tmdb.org/t/p/w500${moviePoster}" class="w-full">
+                <a href="#" class="watched-button block text-center text-white bg-green-500 mt-4 px-4 py-2 rounded">I've watched this!</a>
+            </div>`)
+
+
+        let watchButton = document.querySelector(`.movie-${movieId} .watched-button`)
+        let uniqueMovie = document.querySelector(`.movie-${movieId}`)
+    
+        watchButton.addEventListener('click', async function(event) {
+            event.preventDefault()
+            uniqueMovie.classList.add('opacity-20')
+            console.log(`${movies[i].original_title} was watched.`)
+
+            await db.collection('watched').doc(`${movieId}`).set({})
+        })
+    }
+        
+
+
     // ✅ Step 1: Construct a URL to get movies playing now from TMDB, fetch
     // data and put the Array of movie Objects in a variable called
     // movies. Write the contents of this array to the JavaScript
     // console to ensure you've got good data
     // ⬇️ ⬇️ ⬇️
-  
-    let response = await fetch(`https://api.themoviedb.org/3/movie/now_playing?api_key=6947ffdacb44e290172ab8e8d7f4235e&language=en-US`)
-    let json = await response.json()
-    let movies = json.results
-    console.log(movies)
 
     // ⬆️ ⬆️ ⬆️ 
     // End Step 1
@@ -39,19 +80,6 @@ window.addEventListener('DOMContentLoaded', async function(event) {
     // </div>
     // ⬇️ ⬇️ ⬇️
   
-    
-    for (let i = 0; i < movies.length; i++) {
-        let movieId = movies[i].id 
-        let moviePoster = movies[i].poster_path 
-
-       document.querySelector('.movies').insertAdjacentHTML('beforeend', `
-            <div class="w-1/5 p-4 movie-${movieId}">
-                <img src="https://image.tmdb.org/t/p/w500${moviePoster}" class="w-full">
-                <a href="#" class="watched-button block text-center text-white bg-green-500 mt-4 px-4 py-2 rounded">I've watched this!</a>
-            </div>`)
-
-    
-
     // ⬆️ ⬆️ ⬆️ 
     // End Step 2
   
@@ -67,14 +95,6 @@ window.addEventListener('DOMContentLoaded', async function(event) {
     //   to remove the class if the element already contains it.
     // ⬇️ ⬇️ ⬇️
       
-    let watchButton = document.querySelector(`.movie-${movieId} .watched-button`)
-    let uniqueMovie = document.querySelector(`.movie-${movieId}`)
-
-    watchButton.addEventListener('click', function(event) {
-        event.preventDefault()
-        uniqueMovie.classList.add('opacity-20')
-        console.log(`${movies[i].original_title} was watched.`)
-    })
 
     // let movieWatched = uniqueMovie.classList.contains('opacity-20')
     // console.log(movieWatched)
@@ -86,27 +106,27 @@ window.addEventListener('DOMContentLoaded', async function(event) {
     //     console.log(`${movies[i].original_title} was not watched.`) 
     // }) } else {}
 
-    }
+    // }
 
 
     // ⬆️ ⬆️ ⬆️ 
     // End Step 3
   
     // Step 4: 
-    // - Properly configure Firebase and Firebase Cloud Firestore
-    // - Inside your "watched button" event listener, you wrote in
+    // - ✅ Properly configure Firebase and Firebase Cloud Firestore
+    // - [✅] Inside your "watched button" event listener, you wrote in
     //   step 3, after successfully setting opacity, persist data
     //   for movies watched to Firebase.
-    // - The data could be stored in a variety of ways, but the 
+    // - [✅] The data could be stored in a variety of ways, but the 
     //   easiest approach would be to use the TMDB movie ID as the
     //   document ID in a "watched" Firestore collection.
-    // - Hint: you can use .set({}) to create a document with
+    // - [✅] Hint: you can use .set({}) to create a document with
     //   no data – in this case, the document doesn't need any data;
     //   if a TMDB movie ID is in the "watched" collection, the 
     //   movie has been watched, otherwise it hasn't.
-    // - Modify the code you wrote in Step 2 to conditionally
+    // - [  ] Modify the code you wrote in Step 2 to conditionally
     //   make the movie opaque if it's already watched in the 
     //   database.
-    // - Hint: you can use if (document) with no comparison
+    // - [  ] Hint: you can use if (document) with no comparison
     //   operator to test for the existence of an object.
 }) 
